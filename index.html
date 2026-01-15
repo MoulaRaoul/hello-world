@@ -1,11 +1,559 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Jeu de Drapeaux</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        padding: 40px;
+        max-width: 600px;
+        width: 100%;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        color: #667eea;
+        margin-bottom: 10px;
+        font-size: 2.5em;
+      }
+
+      .score {
+        display: flex;
+        justify-content: space-around;
+        margin: 20px 0;
+        font-size: 1.2em;
+      }
+
+      .score-item {
+        text-align: center;
+      }
+
+      .score-item span {
+        font-weight: bold;
+        color: #667eea;
+        font-size: 1.8em;
+      }
+
+      .game-section {
+        text-align: center;
+        margin: 30px 0;
+      }
+
+      .flag-display {
+        font-size: 150px;
+        margin: 30px 0;
+        line-height: 1;
+        animation: bounce 0.6s ease-in-out;
+      }
+
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+      }
+
+      .question {
+        font-size: 1.3em;
+        color: #333;
+        margin: 20px 0;
+        font-weight: 500;
+      }
+
+      .options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin: 25px 0;
+      }
+
+      .option-btn {
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        background: white;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 1em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        color: #333;
+      }
+
+      .option-btn:hover {
+        border-color: #667eea;
+        background: #f0f4ff;
+        transform: translateY(-2px);
+      }
+
+      .option-btn.selected {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+      }
+
+      .option-btn.correct {
+        background: #4caf50;
+        border-color: #4caf50;
+        color: white;
+      }
+
+      .option-btn.incorrect {
+        background: #f44336;
+        border-color: #f44336;
+        color: white;
+      }
+
+      .option-btn:disabled {
+        cursor: not-allowed;
+      }
+
+      .result-message {
+        font-size: 1.2em;
+        margin: 20px 0;
+        padding: 15px;
+        border-radius: 10px;
+        min-height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .result-message.correct {
+        background: #e8f5e9;
+        color: #2e7d32;
+        font-weight: bold;
+      }
+
+      .result-message.incorrect {
+        background: #ffebee;
+        color: #c62828;
+        font-weight: bold;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+      }
+
+      .btn {
+        flex: 1;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .btn-next {
+        background: #667eea;
+        color: white;
+      }
+
+      .btn-next:hover:not(:disabled) {
+        background: #5568d3;
+        transform: translateY(-2px);
+      }
+
+      .btn-next:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .btn-reset {
+        background: #ff9800;
+        color: white;
+      }
+
+      .btn-reset:hover {
+        background: #f57c00;
+        transform: translateY(-2px);
+      }
+
+      .difficulty {
+        display: flex;
+        gap: 10px;
+        margin: 20px 0;
+        justify-content: center;
+      }
+
+      .difficulty-btn {
+        padding: 8px 15px;
+        border: 2px solid #ddd;
+        background: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .difficulty-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </head>
   <body>
-    <p>Hello, World!</p>
+    <div class="container">
+      <div class="header">
+        <h1>🚩 Jeu de Drapeaux</h1>
+        <p style="color: #666; font-size: 1.1em">
+          Devinez le pays d'après son drapeau !
+        </p>
+      </div>
+
+      <div class="score">
+        <div class="score-item">
+          <div>Bonnes réponses</div>
+          <span id="correct-score">0</span>
+        </div>
+        <div class="score-item">
+          <div>Mauvaises réponses</div>
+          <span id="incorrect-score">0</span>
+        </div>
+      </div>
+
+      <div class="difficulty">
+        <button class="difficulty-btn active" onclick="setDifficulty('easy')">
+          Facile (4 pays)
+        </button>
+        <button class="difficulty-btn" onclick="setDifficulty('medium')">
+          Moyen (6 pays)
+        </button>
+        <button class="difficulty-btn" onclick="setDifficulty('hard')">
+          Difficile (8 pays)
+        </button>
+      </div>
+
+      <div class="game-section">
+        <div class="flag-display" id="flag">🚩</div>
+        <div class="question">Quel pays ce drapeau représente-t-il ?</div>
+        <div class="options" id="options"></div>
+        <div class="result-message" id="result" style="display: none"></div>
+        <div class="button-group">
+          <button
+            class="btn btn-next"
+            id="next-btn"
+            onclick="nextQuestion()"
+            disabled
+          >
+            Question suivante
+          </button>
+          <button class="btn btn-reset" onclick="resetGame()">
+            Recommencer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const countries = {
+        easy: [
+          {
+            name: "France",
+            flag: "🇫🇷",
+            options: ["France", "Italie", "Belgique", "Espagne"],
+          },
+          {
+            name: "Japon",
+            flag: "🇯🇵",
+            options: ["Japon", "Corée du Sud", "Chine", "Vietnam"],
+          },
+          {
+            name: "Brésil",
+            flag: "🇧🇷",
+            options: ["Brésil", "Mexique", "Argentine", "Colombie"],
+          },
+          {
+            name: "États-Unis",
+            flag: "🇺🇸",
+            options: ["États-Unis", "Canada", "Royaume-Uni", "Australie"],
+          },
+        ],
+        medium: [
+          {
+            name: "Allemagne",
+            flag: "🇩🇪",
+            options: ["Allemagne", "Pays-Bas", "Autriche", "Suisse"],
+          },
+          {
+            name: "Australie",
+            flag: "🇦🇺",
+            options: ["Australie", "Nouvelle-Zélande", "Fidji", "Samoa"],
+          },
+          {
+            name: "Égypte",
+            flag: "🇪🇬",
+            options: ["Égypte", "Soudan", "Libye", "Algérie"],
+          },
+          {
+            name: "Inde",
+            flag: "🇮🇳",
+            options: ["Inde", "Bangladesh", "Pakistan", "Népal"],
+          },
+          {
+            name: "Canada",
+            flag: "🇨🇦",
+            options: ["Canada", "États-Unis", "Mexique", "Royaume-Uni"],
+          },
+          {
+            name: "Suède",
+            flag: "🇸🇪",
+            options: ["Suède", "Norvège", "Finlande", "Danemark"],
+          },
+        ],
+        hard: [
+          {
+            name: "Thaïlande",
+            flag: "🇹🇭",
+            options: ["Thaïlande", "Laos", "Cambodge", "Birmanie"],
+          },
+          {
+            name: "Turquie",
+            flag: "🇹🇷",
+            options: ["Turquie", "Syrie", "Irak", "Iran"],
+          },
+          {
+            name: "Roumanie",
+            flag: "🇷🇴",
+            options: ["Roumanie", "Bulgarie", "Serbie", "Croatie"],
+          },
+          {
+            name: "Malaisie",
+            flag: "🇲🇾",
+            options: ["Malaisie", "Singapour", "Indonésie", "Brunei"],
+          },
+          {
+            name: "Pologne",
+            flag: "🇵🇱",
+            options: ["Pologne", "République Tchèque", "Slovaquie", "Hongrie"],
+          },
+          {
+            name: "Kenya",
+            flag: "🇰🇪",
+            options: ["Kenya", "Tanzanie", "Ouganda", "Éthiopie"],
+          },
+          {
+            name: "Portugal",
+            flag: "🇵🇹",
+            options: ["Portugal", "Espagne", "Italie", "Grèce"],
+          },
+          {
+            name: "Nouvelle-Zélande",
+            flag: "🇳🇿",
+            options: ["Nouvelle-Zélande", "Australie", "Fidji", "Samoa"],
+          },
+        ],
+      };
+
+      let currentDifficulty = "easy";
+      let gameState = {
+        currentQuestionIndex: 0,
+        correctScore: 0,
+        incorrectScore: 0,
+        answered: false,
+        questions: [],
+      };
+
+      function setDifficulty(difficulty) {
+        currentDifficulty = difficulty;
+        document.querySelectorAll(".difficulty-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        event.target.classList.add("active");
+        resetGame();
+      }
+
+      function initializeGame() {
+        gameState.questions = JSON.parse(
+          JSON.stringify(countries[currentDifficulty])
+        );
+        gameState.questions.forEach((q) => {
+          q.options = q.options.sort(() => Math.random() - 0.5);
+        });
+        gameState.currentQuestionIndex = 0;
+        gameState.answered = false;
+        loadQuestion();
+      }
+
+      function loadQuestion() {
+        const question = gameState.questions[gameState.currentQuestionIndex];
+
+        // Affiche le drapeau
+        const flagDisplay = document.getElementById("flag");
+        flagDisplay.textContent = question.flag;
+        flagDisplay.style.animation = "none";
+        setTimeout(() => {
+          flagDisplay.style.animation = "bounce 0.6s ease-in-out";
+        }, 10);
+
+        // Affiche les options
+        const optionsContainer = document.getElementById("options");
+        optionsContainer.innerHTML = "";
+        question.options.forEach((option) => {
+          const btn = document.createElement("button");
+          btn.className = "option-btn";
+          btn.textContent = option;
+          btn.onclick = () => selectAnswer(option, question.name, btn);
+          optionsContainer.appendChild(btn);
+        });
+
+        // Réinitialise le message de résultat
+        const resultDiv = document.getElementById("result");
+        resultDiv.style.display = "none";
+        resultDiv.textContent = "";
+
+        gameState.answered = false;
+        document.getElementById("next-btn").disabled = true;
+      }
+
+      function selectAnswer(selected, correct, btnElement) {
+        if (gameState.answered) return;
+
+        gameState.answered = true;
+        const isCorrect = selected === correct;
+
+        // Désactiver tous les boutons
+        document.querySelectorAll(".option-btn").forEach((btn) => {
+          btn.disabled = true;
+          if (btn.textContent === correct) {
+            btn.classList.add("correct");
+          } else if (btn === btnElement && !isCorrect) {
+            btn.classList.add("incorrect");
+          }
+        });
+
+        // Mettre à jour le score
+        if (isCorrect) {
+          gameState.correctScore++;
+          showResult(true, `✅ Correcte ! C'est bien ${correct} !`);
+        } else {
+          gameState.incorrectScore++;
+          showResult(false, `❌ Incorrect ! C'est ${correct} !`);
+        }
+
+        updateScore();
+        document.getElementById("next-btn").disabled = false;
+      }
+
+      function showResult(isCorrect, message) {
+        const resultDiv = document.getElementById("result");
+        resultDiv.textContent = message;
+        resultDiv.className =
+          "result-message " + (isCorrect ? "correct" : "incorrect");
+        resultDiv.style.display = "block";
+      }
+
+      function updateScore() {
+        document.getElementById("correct-score").textContent =
+          gameState.correctScore;
+        document.getElementById("incorrect-score").textContent =
+          gameState.incorrectScore;
+      }
+
+      function nextQuestion() {
+        gameState.currentQuestionIndex++;
+        if (gameState.currentQuestionIndex < gameState.questions.length) {
+          loadQuestion();
+        } else {
+          endGame();
+        }
+      }
+
+      function endGame() {
+        const optionsContainer = document.getElementById("options");
+        optionsContainer.innerHTML = "";
+
+        const resultDiv = document.getElementById("result");
+        resultDiv.style.display = "block";
+
+        const total = gameState.correctScore + gameState.incorrectScore;
+        const percentage = Math.round((gameState.correctScore / total) * 100);
+
+        let message = `🎉 Jeu terminé !<br>Score: ${gameState.correctScore}/${total} (${percentage}%)`;
+        if (percentage === 100) {
+          message += "<br>🏆 Parfait !";
+        } else if (percentage >= 75) {
+          message += "<br>⭐ Excellent !";
+        } else if (percentage >= 50) {
+          message += "<br>👍 Pas mal !";
+        } else {
+          message += "<br>💪 À refaire !";
+        }
+
+        resultDiv.innerHTML = message;
+        resultDiv.className = "result-message correct";
+
+        document.getElementById("flag").textContent = "🎮";
+        document.getElementById("next-btn").style.display = "none";
+      }
+
+      function resetGame() {
+        gameState = {
+          currentQuestionIndex: 0,
+          correctScore: 0,
+          incorrectScore: 0,
+          answered: false,
+          questions: [],
+        };
+        updateScore();
+        document.getElementById("next-btn").style.display = "block";
+        initializeGame();
+      }
+
+      // Initialiser le jeu au chargement
+      window.onload = () => {
+        initializeGame();
+      };
+    </script>
   </body>
 </html>
